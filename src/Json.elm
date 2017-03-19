@@ -10,49 +10,49 @@ type alias Value =
 
 
 type JsonValue
-    = NVal
-    | SVal String
-    | FVal Float
-    | IVal Int
-    | LVal (List JsonValue)
-    | DVal (Dict String JsonValue)
+    = NullVal
+    | StringVal String
+    | FloatVal Float
+    | IntVal Int
+    | ListVal (List JsonValue)
+    | DictVal (Dict String JsonValue)
 
 
 valueDecoder : Decoder JsonValue
 valueDecoder =
     Decode.oneOf
-        [ Decode.map SVal Decode.string
-        , Decode.map FVal Decode.float
-        , Decode.map IVal Decode.int
-        , Decode.map LVal <| Decode.list (Decode.lazy (\() -> valueDecoder))
-        , Decode.map DVal <| Decode.dict (Decode.lazy (\() -> valueDecoder))
-        , Decode.null NVal
+        [ Decode.map StringVal Decode.string
+        , Decode.map FloatVal Decode.float
+        , Decode.map IntVal Decode.int
+        , Decode.map ListVal <| Decode.list (Decode.lazy (\() -> valueDecoder))
+        , Decode.map DictVal <| Decode.dict (Decode.lazy (\() -> valueDecoder))
+        , Decode.null NullVal
         ]
 
 
 eqHelper : JsonValue -> JsonValue -> Bool
 eqHelper left right =
     case ( left, right ) of
-        ( NVal, NVal ) ->
+        ( NullVal, NullVal ) ->
             True
 
-        ( SVal leftVal, SVal rightVal ) ->
+        ( StringVal leftVal, StringVal rightVal ) ->
             leftVal == rightVal
 
-        ( FVal leftVal, FVal rightVal ) ->
+        ( FloatVal leftVal, FloatVal rightVal ) ->
             leftVal == rightVal
 
-        ( IVal leftVal, IVal rightVal ) ->
+        ( IntVal leftVal, IntVal rightVal ) ->
             leftVal == rightVal
 
-        ( LVal leftVal, LVal rightVal ) ->
+        ( ListVal leftVal, ListVal rightVal ) ->
             List.length leftVal
                 == List.length rightVal
                 && (List.map2 eqHelper leftVal rightVal
                         |> List.all ((==) True)
                    )
 
-        ( DVal leftVal, DVal rightVal ) ->
+        ( DictVal leftVal, DictVal rightVal ) ->
             let
                 leftList =
                     Dict.toList leftVal
